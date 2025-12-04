@@ -11,10 +11,12 @@ from model import AutoDriveNet
 
 
 # 定义设备运行环境
-paddle.set_device("gpu")
+paddle.set_device("cpu")
 # 加载训练好的模型文件
 model = AutoDriveNet()
-checkpoint = paddle.load("./results/model.pdparams")
+checkpoint = paddle.load("D:/Project_show_job/Chapter2/results/model.pdparams")
+model.set_state_dict(checkpoint)
+model.eval()
 model.set_state_dict(checkpoint)
 # 定义预处理器
 transformations = transforms.Compose(
