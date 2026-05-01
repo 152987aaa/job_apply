@@ -1,0 +1,24 @@
+<launch>
+    <!-- 启动Gazebo仿真环境 -->
+    <include file="$(find rotors_gazebo)/launch/mav_hovering_example.launch">
+        <arg name="mav_name" value="firefly" />
+    </include>
+    
+    <!-- 启动轨迹跟踪控制器 -->
+    <node name="trajectory_tracker" 
+          pkg="drone_control" 
+          type="trajectory_tracker.py" 
+          output="screen">
+        <!-- PID参数 -->
+        <param name="kp_x" value="2.0" />
+        <param name="kp_y" value="2.0" />
+        <param name="kp_z" value="2.0" />
+    </node>
+    
+    <!-- 启动RViz可视化 -->
+    <node name="rviz" 
+          pkg="rviz" 
+          type="rviz" 
+          args="-d $(find drone_control)/rviz/trajectory.rviz" 
+          output="screen" />
+</launch>

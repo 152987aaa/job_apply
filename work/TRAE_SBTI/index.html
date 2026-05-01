@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TRAE SBTI - 程序员人格测试</title>
+  <style>
+    :root {
+      --bg: #f6f8ff;
+      --panel: #ffffff;
+      --text: #1a1d2e;
+      --muted: #6a7280;
+      --line: #dde3f0;
+      --soft: #edf2ff;
+      --accent: #5c7cfa;
+      --accent-strong: #4263eb;
+      --shadow: 0 16px 40px rgba(66, 99, 235, 0.08);
+      --radius: 22px;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: radial-gradient(circle at top left, #f8faff 0, #f6f8ff 36%, #f2f5ff 100%);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    .shell { max-width: 980px; margin: 0 auto; padding: 24px 16px 56px; }
+    .card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); }
+    .hero { padding: 28px; margin-top: 20px; overflow: hidden; position: relative; }
+    .hero::after { content: ""; position: absolute; right: -60px; top: -60px; width: 180px; height: 180px; border-radius: 50%; background: linear-gradient(180deg, rgba(92, 124, 250, 0.18), rgba(92, 124, 250, 0.02)); pointer-events: none; }
+
+    .eyebrow { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; color: var(--accent-strong); border: 1px solid var(--line); background: var(--soft); border-radius: 999px; padding: 8px 12px; margin-bottom: 16px; }
+    h1, h2, h3, p { margin: 0; }
+    .hero h1 { font-size: clamp(28px, 5vw, 52px); line-height: 1.08; letter-spacing: -0.03em; max-width: 680px; }
+    .hero .sub { margin-top: 14px; color: var(--muted); font-size: 15px; line-height: 1.75; max-width: 720px; }
+    .hero-grid { display: grid; grid-template-columns: 1.3fr 0.9fr; gap: 18px; align-items: stretch; margin-top: 24px; }
+    .mini-panel { padding: 18px; border-radius: 18px; border: 1px solid var(--line); background: linear-gradient(180deg, #fbfcff, #f3f6ff); }
+    .mini-panel h3 { font-size: 15px; margin-bottom: 10px; }
+    .mini-panel ul { margin: 0; padding-left: 18px; color: var(--muted); line-height: 1.8; font-size: 14px; }
+    .hero-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 22px; }
+    .hero-minimal { min-height: 48vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 42px 20px; }
+    .hero-minimal::after { display: none; }
+    .hero-minimal h1 { max-width: none; margin: 0; }
+    .hero-actions-single { justify-content: center; margin-top: 28px; }
+
+    button { border: 0; cursor: pointer; transition: transform .16s ease, box-shadow .16s ease, opacity .16s ease; font: inherit; }
+    button:hover { transform: translateY(-1px); }
+    button:disabled { cursor: not-allowed; opacity: 0.55; transform: none; }
+    .btn-primary { background: var(--accent-strong); color: #fff; padding: 14px 20px; border-radius: 14px; box-shadow: 0 12px 30px rgba(66, 99, 235, 0.18); font-weight: 700; }
+    .btn-secondary { background: #fff; color: var(--accent-strong); padding: 14px 20px; border-radius: 14px; border: 1px solid var(--line); font-weight: 700; }
+
+    .screen { display: none; }
+    .screen.active { display: block; }
+    .test-wrap, .result-wrap { margin-top: 22px; padding: 22px; }
+    .topbar { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 18px; flex-wrap: wrap; }
+    .progress { flex: 1; min-width: 240px; height: 10px; background: #edf2ff; border-radius: 999px; overflow: hidden; position: relative; }
+    .progress > span { display: block; width: 0; height: 100%; background: linear-gradient(90deg, #748ffc, #5c7cfa); border-radius: inherit; transition: width .22s ease; }
+    .progress-text { color: var(--muted); font-size: 13px; white-space: nowrap; }
+
+    .question-list { display: grid; gap: 16px; }
+    .question { border: 1px solid var(--line); border-radius: 18px; padding: 18px; background: linear-gradient(180deg, #ffffff, #fbfcff); }
+    .question-meta { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 10px; color: var(--muted); font-size: 12px; }
+    .badge { display: inline-flex; align-items: center; gap: 6px; border-radius: 999px; padding: 6px 10px; background: var(--soft); border: 1px solid var(--line); }
+    .question-title { font-size: 16px; line-height: 1.7; white-space: pre-wrap; }
+    .options { display: grid; gap: 10px; margin-top: 14px; }
+    .option { display: flex; align-items: flex-start; gap: 12px; padding: 14px; border-radius: 14px; border: 1px solid var(--line); background: #fff; transition: border-color .16s ease, background .16s ease; }
+    .option:hover { border-color: #bcd0f0; background: #f8faff; }
+    .option input { margin-top: 3px; accent-color: var(--accent-strong); transform: scale(1.1); flex-shrink: 0; }
+    .option-code { font-weight: 800; color: var(--accent-strong); min-width: 22px; }
+    .actions-bottom { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 18px; padding-top: 6px; }
+    .hint { color: var(--muted); font-size: 13px; line-height: 1.7; }
+
+    .result-layout { display: grid; gap: 18px; }
+    .result-top { display: grid; grid-template-columns: 0.9fr 1.1fr; gap: 18px; align-items: stretch; }
+    .poster-box, .type-box, .analysis-box, .dim-box, .note-box { border: 1px solid var(--line); border-radius: 18px; padding: 18px; background: linear-gradient(180deg, #ffffff, #fbfcff); }
+    .poster-box { display: grid; grid-template-rows: 1fr auto; min-height: 280px; overflow: hidden; position: relative; background: radial-gradient(circle at top right, rgba(92,124,250,0.16), rgba(92,124,250,0) 40%), linear-gradient(180deg, #ffffff, #f7faff); }
+    .poster-box::after { content: ""; position: absolute; right: -46px; bottom: -46px; width: 140px; height: 140px; border-radius: 50%; background: linear-gradient(180deg, rgba(92,124,250,0.12), rgba(92,124,250,0.01)); pointer-events: none; }
+    .poster-image { width: 100%; min-height: 220px; max-height: 460px; object-fit: contain; border-radius: 18px; background: rgba(255,255,255,0.75); position: relative; z-index: 1; }
+    .poster-box.no-image .poster-image { display: none; }
+    .poster-caption { margin-top: 14px; color: var(--muted); font-size: 14px; line-height: 1.8; position: relative; z-index: 1; }
+
+    .type-kicker { font-size: 12px; color: var(--accent-strong); margin-bottom: 8px; letter-spacing: .05em; }
+    .type-name { font-size: clamp(30px, 5vw, 48px); line-height: 1.08; letter-spacing: -0.03em; }
+    .type-subname { margin-top: 8px; color: var(--muted); font-size: 15px; }
+    .match { margin-top: 18px; display: inline-flex; align-items: center; gap: 8px; border-radius: 999px; padding: 10px 14px; background: var(--soft); border: 1px solid var(--line); color: var(--accent-strong); font-weight: 700; }
+    .type-desc { margin-top: 18px; line-height: 1.85; font-size: 15px; color: #2a2d3e; }
+    .analysis-box h3, .dim-box h3, .note-box h3 { font-size: 16px; margin-bottom: 12px; }
+    .result-actions { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 22px; }
+    .analysis-box p { margin: 0; color: #2a2d3e; font-size: 15px; line-height: 1.9; white-space: pre-wrap; }
+    .dim-list { display: grid; gap: 12px; }
+    .dim-item { border: 1px solid var(--line); border-radius: 16px; padding: 14px; background: #fff; }
+    .dim-item-top { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; margin-bottom: 8px; flex-wrap: wrap; }
+    .dim-item-name { font-size: 14px; font-weight: 700; color: var(--text); }
+    .dim-item-score { color: var(--accent-strong); font-weight: 800; font-size: 14px; white-space: nowrap; }
+    .dim-item p { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.8; }
+    .note-box p { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.8; }
+
+    .author-box { border: 1px solid var(--line); border-radius: 18px; background: linear-gradient(180deg, #ffffff, #fbfcff); overflow: hidden; }
+    .author-box summary { list-style: none; cursor: pointer; padding: 18px; font-size: 16px; font-weight: 700; color: var(--text); display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .author-box summary::-webkit-details-marker { display: none; }
+    .author-box summary::after { content: '展开'; font-size: 12px; font-weight: 700; color: var(--accent-strong); border: 1px solid var(--line); background: var(--soft); padding: 6px 10px; border-radius: 999px; flex-shrink: 0; }
+    .author-box[open] summary::after { content: '收起'; }
+    .author-content { border-top: 1px solid var(--line); padding: 0 18px 18px; }
+    .author-content p { margin: 14px 0 0; color: #2a2d3e; font-size: 14px; line-height: 1.9; }
+
+    @media (max-width: 860px) { .result-top { grid-template-columns: 1fr; } .hero-grid { grid-template-columns: 1fr; } }
+    @media (max-width: 600px) { .shell { padding: 14px 12px 42px; } .hero, .test-wrap, .result-wrap { padding: 16px; } .hero h1 { font-size: 32px; } .question-title { font-size: 15px; } }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <section id="intro" class="screen active">
+      <div class="hero card hero-minimal">
+        <h1>TRAE SBTI - 程序员人格测试</h1>
+        <p style="margin-top: 16px; color: var(--muted);">测测你是哪种类型的程序员</p>
+        <div class="hero-actions hero-actions-single">
+          <button id="startBtn" class="btn-primary">开始测试</button>
+        </div>
+        <div style="padding-top: 2rem; display: flex; flex-direction: column; color: var(--muted); font-size: 14px;">
+          <span>基于 TRAE CN 社区用户画像设计</span>
+          <span style="margin-top: 8px;">共15个维度 · 30道题 · 12种人格类型</span>
+        </div>
+      </div>
+    </section>
+
+    <section id="test" class="screen">
+      <div class="test-wrap card">
+        <div class="topbar">
+          <div class="progress"><span id="progressBar"></span></div>
+          <div class="progress-text" id="progressText">0 / 30</div>
+        </div>
+        <div id="questionList" class="question-list"></div>
+        <div class="actions-bottom">
+          <div class="hint" id="testHint">全选完才会放行。认真作答才能找到真实的自己。</div>
+          <div style="display:flex; gap:12px; flex-wrap:wrap;">
+            <button id="backIntroBtn" class="btn-secondary">返回首页</button>
+            <button id="submitBtn" class="btn-primary" disabled>提交并查看结果</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="result" class="screen">
+      <div class="result-wrap card">
+        <div class="result-layout">
+          <div class="result-top">
+            <div class="poster-box" id="posterBox">
+              <img id="posterImage" class="poster-image" alt="人格结果图" />
+              <div id="posterCaption" class="poster-caption">你的人格类型是？</div>
+            </div>
+            <div class="type-box">
+              <div class="type-kicker" id="resultModeKicker">你的主类型</div>
+              <div class="type-name" id="resultTypeName">CODE-WIZARD</div>
+              <div class="match" id="matchBadge">匹配度 0%</div>
+              <div class="type-subname" id="resultTypeSub">系统备注会显示在这里。</div>
+            </div>
+          </div>
+          <div class="analysis-box">
+            <h3>该人格的简单解读</h3>
+            <p id="resultDesc"></p>
+          </div>
+          <div class="dim-box">
+            <h3>十五维度评分</h3>
+            <div id="dimList" class="dim-list"></div>
+          </div>
+          <div class="note-box">
+            <h3>友情提示</h3>
+            <p id="funNote">本测试仅供娱乐，别用它来指导招聘、晋升、技术选型或相亲。</p>
+          </div>
+          <details class="author-box">
+            <summary>关于 TRAE SBTI</summary>
+            <div class="author-content">
+              <p>TRAE SBTI 是为 TRAE CN 社区设计的程序员人格测试。</p>
+              <p>基于程序员的日常工作场景、代码编写习惯、AI工具使用态度等维度进行设计。</p>
+              <p>如果你也是开发者，欢迎来 TRAE CN 论坛分享你的测试结果！</p>
+            </div>
+          </details>
+        </div>
+        <div class="result-actions">
+          <div style="display:flex; gap:12px; flex-wrap:wrap;">
+            <button id="restartBtn" class="btn-secondary">重新测试</button>
+            <button id="toTopBtn" class="btn-primary">回到首页</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const dimensionMeta = {
+      C1: { name: 'C1 代码风格', model: 'Code模型' },
+      C2: { name: 'C2 技术广度', model: 'Code模型' },
+      C3: { name: 'C3 问题解决', model: 'Code模型' },
+      A1: { name: 'A1 AI依赖度', model: 'AI模型' },
+      A2: { name: 'A2 AI信任度', model: 'AI模型' },
+      A3: { name: 'A3 AI学习观', model: 'AI模型' },
+      L1: { name: 'L1 学习方式', model: '学习模型' },
+      L2: { name: 'L2 成长心态', model: '学习模型' },
+      L3: { name: 'L3 知识分享', model: '学习模型' },
+      S1: { name: 'S1 社区参与', model: '社区模型' },
+      S2: { name: 'S2 互助态度', model: '社区模型' },
+      S3: { name: 'S3 反馈风格', model: '社区模型' },
+      E1: { name: 'E1 工作节奏', model: '效率模型' },
+      E2: { name: 'E2 时间管理', model: '效率模型' },
+      E3: { name: 'E3 任务处理', model: '效率模型' }
+    };
+
+    const questions = [
+      { id: 'q1', dim: 'C1', text: '面对一个需要重构的历史遗留模块，你的首选策略是？', options: [{ label: '先完整阅读代码，理解业务逻辑后再动手', value: 1 }, { label: '写好测试用例，然后逐步重构', value: 2 }, { label: '能跑就行，新功能直接加在旧代码旁边', value: 3 }] },
+      { id: 'q2', dim: 'C1', text: '代码提交时，你会花多少时间写提交信息？', options: [{ label: '简单写几个字，描述清楚就行', value: 1 }, { label: '按照规范写，但不会太详细', value: 2 }, { label: '详细描述改了什么、为什么改、怎么改的', value: 3 }] },
+      { id: 'q3', dim: 'C2', text: '学习新技术时，你更倾向于？', options: [{ label: '深入掌握一两种核心技术，形成深度优势', value: 1 }, { label: '广泛了解多种技术，建立全面的技术视野', value: 2 }, { label: '只学工作中需要的，其他不感兴趣', value: 3 }] },
+      { id: 'q4', dim: 'C2', text: '当同事用你不熟悉的技术栈解决问题时，你的反应是？', options: [{ label: '主动了解学习，说不定以后用得上', value: 1 }, { label: '大概知道是做什么的就行，不深入', value: 2 }, { label: '那是他的事，我只关心我的技术栈', value: 3 }] },
+      { id: 'q5', dim: 'C3', text: '一个bug困扰了你两天仍未解决，你会怎么做？', options: [{ label: '继续独自排查，坚信一定能找到原因', value: 1 }, { label: '在内部群或论坛提问，寻求帮助', value: 2 }, { label: '换个思路，或者暂时搁置', value: 3 }] },
+      { id: 'q6', dim: 'C3', text: '当你发现一个神秘的系统问题时，首先会？', options: [{ label: '查看日志和监控数据，用证据说话', value: 1 }, { label: '根据经验猜测可能的原因，然后验证', value: 2 }, { label: '重启服务试试，有时候玄学也管用', value: 3 }] },
+      { id: 'q7', dim: 'A1', text: '写代码时，你会如何利用AI辅助工具？', options: [{ label: 'AI只是参考，关键逻辑和核心代码自己写', value: 1 }, { label: '让AI生成代码框架和样板代码，自己完善', value: 2 }, { label: '能交给AI做的就交给它，我只做review', value: 3 }] },
+      { id: 'q8', dim: 'A1', text: '使用AI代码助手时，你最常拿来做什么？', options: [{ label: '查询文档和最佳实践', value: 1 }, { label: '生成常规函数和模板代码', value: 2 }, { label: '帮我写整段逻辑甚至整个模块', value: 3 }] },
+      { id: 'q9', dim: 'A2', text: 'AI生成的代码，你会直接用到生产环境吗？', options: [{ label: '绝对不会，必须完全理解并手动重写', value: 1 }, { label: '简单的代码可以用，复杂的必须仔细审核', value: 2 }, { label: '只要能跑就行，AI生成的不会有问题', value: 3 }] },
+      { id: 'q10', dim: 'A2', text: '当你问AI一个问题，它给出了一个你感觉不对的答案，你会？', options: [{ label: '质疑AI，指出它的逻辑错误', value: 1 }, { label: '换一种方式提问，或者查官方文档确认', value: 2 }, { label: 'AI很强大，可能是我理解错了', value: 3 }] },
+      { id: 'q11', dim: 'A3', text: '你认为AI工具对你的技术成长有何影响？', options: [{ label: '让我能更快完成工作，但可能让人变懒', value: 1 }, { label: '帮助我学习新知识，让我成长更快', value: 2 }, { label: '无所谓，反正够用就行', value: 3 }] },
+      { id: 'q12', dim: 'A3', text: '遇到新技术文档看不懂时，AI能帮你理解吗？', options: [{ label: 'AI可以解释概念，但深入原理还得自己研究', value: 1 }, { label: 'AI举的例子很有帮助，能加速理解', value: 2 }, { label: 'AI直接给答案，比看文档高效多了', value: 3 }] },
+      { id: 'q13', dim: 'L1', text: '学习一门新编程语言时，你更喜欢？', options: [{ label: '先看文档和书籍，打好理论基础', value: 1 }, { label: '看官方示例，边做边学', value: 2 }, { label: '直接看源码，从实践中理解', value: 3 }] },
+      { id: 'q14', dim: 'L1', text: '你学新技术时，会做笔记吗？', options: [{ label: '会写博客或笔记，加深理解也方便回顾', value: 1 }, { label: '偶尔记一下关键点', value: 2 }, { label: '从来不记，用的时候再查', value: 3 }] },
+      { id: 'q15', dim: 'L2', text: '当代码出现低级错误被同事指出时，你的反应是？', options: [{ label: '尴尬但虚心接受，下次注意', value: 1 }, { label: '有点不爽，但还是会改', value: 2 }, { label: '这很正常，谁还没写过bug', value: 3 }] },
+      { id: 'q16', dim: 'L2', text: '面对一个完全陌生的技术挑战，你会？', options: [{ label: '兴奋！这是一个学习新事物的机会', value: 1 }, { label: '有点压力，但还是会尝试', value: 2 }, { label: '能推就推，这不在我的工作范围内', value: 3 }] },
+      { id: 'q17', dim: 'L3', text: '你在技术社区（论坛、GitHub等）通常扮演什么角色？', options: [{ label: '积极回答问题，分享自己的经验', value: 1 }, { label: '偶尔互动，主要以获取信息为主', value: 2 }, { label: '基本只看不动手，不想暴露自己', value: 3 }] },
+      { id: 'q18', dim: 'L3', text: '当你的开源项目收到issue时，你会？', options: [{ label: '认真分析，尽快回复和解决', value: 1 }, { label: '看情况，简单的就回复，复杂的暂时搁置', value: 2 }, { label: '这又是白嫖怪，不理', value: 3 }] },
+      { id: 'q19', dim: 'S1', text: '在TRAE社区论坛上，你一般会？', options: [{ label: '主动发帖分享技术心得或回答问题', value: 1 }, { label: '偶尔回复，但很少主动发帖', value: 2 }, { label: '只看不说，不想被认出来', value: 3 }] },
+      { id: 'q20', dim: 'S1', text: '参加技术社区线下活动时，你更倾向于？', options: [{ label: '主动发言，和大家交流经验', value: 1 }, { label: '参加小组讨论，但不会主动演讲', value: 2 }, { label: '默默听课，当个安静的听众', value: 3 }] },
+      { id: 'q21', dim: 'S2', text: '同事发了一个"救命！这个bug怎么都修不好"的帖子，你会？', options: [{ label: '主动联系，提供帮助', value: 1 }, { label: '在帖子下面给出可能的解决思路', value: 2 }, { label: '看看有没有类似经历，顺便学习一下', value: 3 }] },
+      { id: 'q22', dim: 'S2', text: '当有人问你一个很基础的问题时，你会？', options: [{ label: '耐心解答，谁都是从新手过来的', value: 1 }, { label: '给个方向，让他自己研究', value: 2 }, { label: '这都不会，还是去看文档吧', value: 3 }] },
+      { id: 'q23', dim: 'S3', text: '当你看到一段写得很烂的代码时，你的反应是？', options: [{ label: '在代码审查里详细指出问题，给出改进建议', value: 1 }, { label: '简单提一下主要问题', value: 2 }, { label: '只要能跑就行，懒得说', value: 3 }] },
+      { id: 'q24', dim: 'S3', text: '同事分享了一个你认为不太对的观点，你会？', options: [{ label: '礼貌地表达不同意见，并说明理由', value: 1 }, { label: '私下交流，不公开反驳', value: 2 }, { label: '关我什么事，不评价', value: 3 }] },
+      { id: 'q25', dim: 'E1', text: '你更喜欢什么样的工作节奏？', options: [{ label: '按计划推进，每天完成既定目标', value: 1 }, { label: '灵活安排，有灵感和状态就多干', value: 2 }, { label: 'deadline是第一生产力', value: 3 }] },
+      { id: 'q26', dim: 'E1', text: '面对一个预估需要3天完成的任务，你会？', options: [{ label: '拆解任务，制定详细计划', value: 1 }, { label: '先做再说，随时调整', value: 2 }, { label: '最后一天冲刺，前两天摸鱼', value: 3 }] },
+      { id: 'q27', dim: 'E2', text: '你是如何管理日常工作的？', options: [{ label: '使用待办清单和GTD方法', value: 1 }, { label: '大概记一下，不严格', value: 2 }, { label: '全靠脑子记，工具太麻烦了', value: 3 }] },
+      { id: 'q28', dim: 'E2', text: '当你同时面对多个紧急任务时，你会？', options: [{ label: '按重要紧急程度排序，一件件处理', value: 1 }, { label: '尝试并行处理，看状态', value: 2 }, { label: '哪个催得急就先做哪个', value: 3 }] },
+      { id: 'q29', dim: 'E3', text: '工作时，你通常会？', options: [{ label: '专注一件事，把它做到最好', value: 1 }, { label: '同时开多个任务，看情况切换', value: 2 }, { label: '想到什么做什么', value: 3 }] },
+      { id: 'q30', dim: 'E3', text: '当你沉浸在一个问题的解决中时，突然被拉去开会是？', options: [{ label: '很不情愿，思路会被打断', value: 1 }, { label: '无所谓，回来继续就行', value: 2 }, { label: '正好休息一下，回来可能有新思路', value: 3 }] }
+    ];
+
+    const specialQuestions = [];
+
+    const TYPE_LIBRARY = {
+      "WIZARD": { code: "WIZARD", cn: "技术 wizard", intro: "代码如魔法，一切皆可实现。", desc: "恭喜你！你是程序员中的技术 wizard。对你来说，没有实现不了的功能，只有不够优雅的方案。你的代码是艺术品，你的debug是侦察任务。你对技术有近乎痴迷的追求，愿意为了一行代码的优化熬夜到凌晨三点。你是那种能在面试中手写红黑树的狠人，也是那种会在技术选型会上为了一个设计模式跟同事争论半小时的理想主义者。你的代码注释可能比代码本身还长，但这恰恰体现了你对技术的尊重。" },
+      "CRAFTSMAN": { code: "CRAFTSMAN", cn: "代码匠人", intro: "慢工出细活，代码即作品。", desc: "你是程序员中的匠人，信仰\"代码之道\"。对你而言，编程不仅是工作，更是一种修行。你追求的是代码的优美、可读性和可维护性。你会为了一个变量名思考五分钟，会为了代码格式化和同事制定规范，会在code review时写下\"这里可以考虑用策略模式\"的评论。你相信好的代码是团队协作的基础，也是对未来的自己负责。你的代码注释详尽，文档完善，是团队中最受欢迎的合作者。" },
+      "HACKER": { code: "HACKER", cn: "黑客思维", intro: "规则是用来打破的。", desc: "你是程序员中的黑客，崇尚\"黑猫精神\"。对你来说，计算机是一个待破解的系统，代码是一把万能钥匙。你喜欢走捷径，善于利用各种工具和脚本提高效率。你对系统底层有深刻理解，能够hack各种框架和工具为己用。你的代码可能不够规范，但绝对高效；你的解决方案可能不够正统，但一定管用。你是那种能在紧急时刻用一行命令解决别人花三天处理的问题的人。" },
+      "COPILOT": { code: "COPILOT", cn: "AI协作者", intro: "AI是我的第二大脑。", desc: "你是程序员中的AI协作者，拥抱人机协作的新时代。你认为AI不是威胁而是助手，善于利用各种AI工具提升效率。你会使用AI生成代码框架，让AI帮你debug和优化，甚至用AI来学习新技术。但你并不是完全依赖AI，你会批判性地审视AI的输出，确保代码质量。对你而言，AI是超级助理，让你能够专注于更有创造性的工作。" },
+      "STUDENT": { code: "STUDENT", cn: "终身学习者", intro: "学无止境，保持好奇。", desc: "你是程序员中的终身学习者，对知识有永不满足的渴望。你订阅了无数技术博客，购买了堆灰的在线课程，关注了上百个GitHub仓库。你享受学习新技术的快感，虽然可能学完就用不上了。你的书架上摆满了\"待读\"的技术书籍，你的笔记软件里存满了各种教程链接。对你而言，学习本身就是一种乐趣，而不仅仅是为了工作。" },
+      "PRAGMATIST": { code: "PRAGMATIST", cn: "实用主义者", intro: "够用就好，快速交付。", desc: "你是程序员中的实用主义者，信奉\"完美是优秀的敌人\"。你深知在现实中，完美的代码不如能跑的代码，与其花三天优化一个函数，不如用半小时写个能用的方案。你善于权衡利弊，懂得在截止日期和代码质量之间找到平衡点。你的代码可能不够优雅，但一定能完成任务。你是团队中的救火队员，总能在关键时刻顶上。" },
+      "MENTOR": { code: "MENTOR", cn: "技术导师", intro: "独乐乐不如众乐乐。", desc: "你是程序员中的技术导师，热爱分享和教学。你相信知识不应该被囤积，而是应该被传播。你会在社区回答问题，写技术博客，分享自己的经验。你善于用简单的语言解释复杂的技术概念，是团队中新人的引路人。你从帮助他人成长中获得成就感，而不不仅仅是完成自己的任务。你是那种会在code review时详细解释\"为什么要这样改\"的人。" },
+      "LURKER": { code: "LURKER", cn: "沉默观察者", intro: '默默观察，深度思考。', desc: "你是程序员中的沉默观察者，崇尚\"静水流深\"。你可能很少在社区发言，但你一直在默默学习和观察。你善于从别人的代码和方案中学习优点，从错误案例中吸取教训。你深度内敛，不喜欢抛头露面，但关键时刻能给出最有价值的建议。你的沉默不是无能，而是深思熟虑；你的低调不是懦弱，而是胸有成竹。" },
+      "BUILDER": { code: "BUILDER", cn: "全栈建造者", intro: "从零到一，创造一切。", desc: "你是程序员中的全栈建造者，有一颗创业的心。你不满足于只做一颗螺丝钉，而是想要理解整个系统是如何运转的。你愿意花时间学习从前端到后端、从设计到部署的完整技术栈。你有产品思维，能够从用户需求出发思考问题。你是那种会为了自己的side project燃烧周末的人，梦想着有一天能做出改变世界的产品。" },
+      "ARCHITECT": { code: "ARCHITECT", cn: "架构师思维", intro: "不谋全局者，不足谋一域。", desc: "你是程序员中的架构师，习惯从宏观角度思考问题。你不满足于写好一个函数或一个模块，而是想要设计整个系统的架构。你善于抽象和建模，能够将复杂的业务需求转化为清晰的技术方案。你关注系统的可扩展性、可维护性和性能。技术债务对你来说如鲠在喉，你总想重构出更优雅的架构。" },
+      "DEBUGGER": { code: "DEBUGGER", cn: "调试专家", intro: "Bug虐我千百遍，我待Bug如初恋。", desc: "你是程序员中的调试专家，把debug当作解谜游戏。你享受寻找bug根源的过程，那种\"踏破铁鞋无觅处，得来费功夫\"的快感让你欲罢不能。你有敏锐的直觉和系统的排查方法，能够从海量日志中定位问题。你是那种能在别人放弃后继续挖掘两小时，最终找到那个隐藏极深的问题的人。" },
+      "NINJA": { code: "NINJA", cn: "代码忍者", intro: "事了拂衣去，深藏身与名。", desc: "你是程序员中的代码忍者，神秘而高效。你话不多，但代码质量极高；你不张扬，但总能在deadline前完成关键任务。你善于隐藏自己的真实水平，在关键时刻才展现出真正的实力。你不追求成为焦点，但你的代码会替你说话。你是团队中的隐形王牌，平时默默无闻，一旦出场便是惊艳全场。" }
+    };
+
+    const TYPE_IMAGES = {
+      "WIZARD": "https://via.placeholder.com/400x500/4263eb/ffffff?text=WIZARD",
+      "CRAFTSMAN": "https://via.placeholder.com/400x500/4263eb/ffffff?text=CRAFTSMAN",
+      "HACKER": "https://via.placeholder.com/400x500/4263eb/ffffff?text=HACKER",
+      "COPILOT": "https://via.placeholder.com/400x500/4263eb/ffffff?text=COPILOT",
+      "STUDENT": "https://via.placeholder.com/400x500/4263eb/ffffff?text=STUDENT",
+      "PRAGMATIST": "https://via.placeholder.com/400x500/4263eb/ffffff?text=PRAGMATIST",
+      "MENTOR": "https://via.placeholder.com/400x500/4263eb/ffffff?text=MENTOR",
+      "LURKER": "https://via.placeholder.com/400x500/4263eb/ffffff?text=LURKER",
+      "BUILDER": "https://via.placeholder.com/400x500/4263eb/ffffff?text=BUILDER",
+      "ARCHITECT": "https://via.placeholder.com/400x500/4263eb/ffffff?text=ARCHITECT",
+      "DEBUGGER": "https://via.placeholder.com/400x500/4263eb/ffffff?text=DEBUGGER",
+      "NINJA": "https://via.placeholder.com/400x500/4263eb/ffffff?text=NINJA"
+    };
+
+    const NORMAL_TYPES = [
+      { code: "WIZARD", pattern: "HHH-HHH-HHH-HHH-HHH-HHH" },
+      { code: "CRAFTSMAN", pattern: "HHH-HMH-HMH-HHH-MMM-HMH" },
+      { code: "HACKER", pattern: "HHL-HHL-HHH-MMM-HMM-HHL" },
+      { code: "COPILOT", pattern: "MHM-MMM-HMH-HHH-MHM-MMH" },
+      { code: "STUDENT", pattern: "HMH-HMH-HMH-HMH-HMH-HMH" },
+      { code: "PRAGMATIST", pattern: "MHM-MMM-MMM-HMM-MMM-MMM" },
+      { code: "MENTOR", pattern: "HHM-HHH-HHH-HHH-HHH-HHH" },
+      { code: "LURKER", pattern: "MHM-HMM-MHM-HMH-MHM-MMM" },
+      { code: "BUILDER", pattern: "HHM-HMH-HMH-MHM-HMH-HMH" },
+      { code: "ARCHITECT", pattern: "HHH-HMH-HMH-HMH-HMH-HMH" },
+      { code: "DEBUGGER", pattern: "HHL-HHM-HMH-MHM-MHH-HHL" },
+      { code: "NINJA", pattern: "HHL-HMM-HMH-HMM-HMM-HMM" }
+    ];
+
+    const DIM_EXPLANATIONS = {
+      C1: { L: "代码能跑就行，规范什么的不重要。", M: "有时候追求完美，有时候够用就好。", H: "代码是门艺术，每一行都要优雅。"},
+      C2: { L: "只关注自己的一亩三分地。", M: "会了解相关技术，但不深究。", H: "技术视野广泛，什么都想学。"},
+      C3: { L: "遇到问题就问，或者直接搁置。", M: "会尝试解决，但不会死磕。", H: "不解决不罢休，总能找到办法。"},
+      A1: { L: "AI只是工具，关键还得靠自己。", M: "适度使用AI提高效率。", H: "能交给AI做的就交给AI。"},
+      A2: { L: "AI输出必须仔细审核，不能全信。", M: "简单的可以用，复杂的多验证。", H: "AI很可靠，基本可以直接用。"},
+      A3: { L: "AI可能让人变懒，还是得自己学。", M: "AI能辅助学习，但非万能。", H: "AI让学习更高效，用就是了。"},
+      L1: { L: "不记笔记，用时再查。", M: "偶尔记一下关键点。", H: "系统学习，做笔记写博客。"},
+      L2: { L: "低调摸鱼，别给自己找麻烦。", M: "有点压力但还是会尝试。", H: "乐于挑战，把困难当成长机会。"},
+      L3: { L: "技术是自己的，藏都来不及。", M: "偶尔分享，看情况。", H: "热爱分享，帮助别人成长自己。"},
+      S1: { L: "社区围观群众，从不发言。", M: "偶尔互动，主要看帖。", H: "社区活跃分子，经常发帖回帖。"},
+      S2: { L: "各扫门前雪，不管他人瓦上霜。", M: "力所能及的会帮，太麻烦的不管。", H: "热心肠，主动帮助他人。"},
+      S3: { L: "关我什么事，不评价。", M: "简单提一下，不深入。", H: "详细反馈，帮助他人成长。"},
+      E1: { L: "deadline是第一生产力。", M: "有一定计划，但也会随机应变。", H: "按计划推进，有条不紊。"},
+      E2: { L: "全靠脑子，走一步看一步。", M: "用简单的工具记录。", H: "系统化管理，GTD等方法。"},
+      E3: { L: "多任务并行，想到什么做什么。", M: "看情况切换任务。", H: "专注一件事，做到最好。"}
+    };
+
+    const dimensionOrder = ['C1','C2','C3','A1','A2','A3','L1','L2','L3','S1','S2','S3','E1','E2','E3'];
+
+    const app = { shuffledQuestions: [], answers: {}, previewMode: false };
+    const screens = { intro: document.getElementById('intro'), test: document.getElementById('test'), result: document.getElementById('result') };
+    const questionList = document.getElementById('questionList');
+    const progressBar = document.getElementById('progressBar');
+    const progressText = document.getElementById('progressText');
+    const submitBtn = document.getElementById('submitBtn');
+    const testHint = document.getElementById('testHint');
+
+    function showScreen(name) {
+      Object.entries(screens).forEach(([key, el]) => el.classList.toggle('active', key === name));
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function shuffle(array) {
+      const arr = [...array];
+      for (let i = arr.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [arr[i], arr[j]] = [arr[j], arr[i]]; }
+      return arr;
+    }
+
+    function getVisibleQuestions() { return [...app.shuffledQuestions]; }
+
+    function getQuestionMetaLabel(q) { return app.previewMode ? dimensionMeta[q.dim].name : '维度已隐藏'; }
+
+    function renderQuestions() {
+      const visibleQuestions = getVisibleQuestions();
+      questionList.innerHTML = '';
+      visibleQuestions.forEach((q, index) => {
+        const card = document.createElement('article');
+        card.className = 'question';
+        card.innerHTML = `
+          <div class="question-meta"><div class="badge">第 ${index + 1} 题</div><div>${getQuestionMetaLabel(q)}</div></div>
+          <div class="question-title">${q.text}</div>
+          <div class="options">${q.options.map((opt, i) => {
+            const code = ['A', 'B', 'C', 'D'][i] || String(i + 1);
+            const checked = app.answers[q.id] === opt.value ? 'checked' : '';
+            return `<label class="option"><input type="radio" name="${q.id}" value="${opt.value}" ${checked} /><div class="option-code">${code}</div><div>${opt.label}</div></label>`;
+          }).join('')}</div>`;
+        questionList.appendChild(card);
+      });
+
+      questionList.querySelectorAll('input[type="radio"]').forEach(input => {
+        input.addEventListener('change', (e) => {
+          app.answers[e.target.name] = Number(e.target.value);
+          updateProgress();
+        });
+      });
+      updateProgress();
+    }
+
+    function updateProgress() {
+      const visibleQuestions = getVisibleQuestions();
+      const total = visibleQuestions.length;
+      const done = visibleQuestions.filter(q => app.answers[q.id] !== undefined).length;
+      const percent = total ? (done / total) * 100 : 0;
+      progressBar.style.width = `${percent}%`;
+      progressText.textContent = `${done} / ${total}`;
+      submitBtn.disabled = done !== total;
+      testHint.textContent = done === total ? '都做完了。现在可以把你的结果交给命运。' : '全选完才会放行。认真作答才能找到真实的自己。';
+    }
+
+    function sumToLevel(score) { if (score <= 3) return 'L'; if (score === 4) return 'M'; return 'H'; }
+    function levelNum(level) { return { L: 1, M: 2, H: 3 }[level]; }
+    function parsePattern(pattern) { return pattern.replace(/-/g, '').split(''); }
+
+    function computeResult() {
+      const rawScores = {}; const levels = {};
+      Object.keys(dimensionMeta).forEach(dim => { rawScores[dim] = 0; });
+      questions.forEach(q => { rawScores[q.dim] += Number(app.answers[q.id] || 0); });
+      Object.entries(rawScores).forEach(([dim, score]) => { levels[dim] = sumToLevel(score); });
+      const userVector = dimensionOrder.map(dim => levelNum(levels[dim]));
+      const ranked = NORMAL_TYPES.map(type => {
+        const vector = parsePattern(type.pattern).map(levelNum);
+        let distance = 0; let exact = 0;
+        for (let i = 0; i < vector.length; i++) { const diff = Math.abs(userVector[i] - vector[i]); distance += diff; if (diff === 0) exact += 1; }
+        const similarity = Math.max(0, Math.round((1 - distance / 30) * 100));
+        return { ...type, ...TYPE_LIBRARY[type.code], distance, exact, similarity };
+      }).sort((a, b) => { if (a.distance !== b.distance) return a.distance - b.distance; if (b.exact !== a.exact) return b.exact - a.exact; return b.similarity - a.similarity; });
+
+      const bestNormal = ranked[0];
+      let finalType = bestNormal;
+      let modeKicker = '你的主类型';
+      let badge = `匹配度 ${bestNormal.similarity}% · 精准命中 ${bestNormal.exact}/15 维`;
+      let sub = '维度命中度较高，当前结果可视为你的第一人格画像。';
+      if (bestNormal.similarity < 60) { finalType = TYPE_LIBRARY.NINJA; modeKicker = '系统兜底人格'; badge = `标准匹配仅 ${bestNormal.similarity}%`; sub = '系统为你匹配了最接近的的人格类型。'; }
+      return { rawScores, levels, ranked, bestNormal, finalType, modeKicker, badge, sub };
+    }
+
+    function renderDimList(result) {
+      const dimList = document.getElementById('dimList');
+      dimList.innerHTML = dimensionOrder.map(dim => {
+        const level = result.levels[dim];
+        const explanation = DIM_EXPLANATIONS[dim][level];
+        return `<div class="dim-item"><div class="dim-item-top"><div class="dim-item-name">${dimensionMeta[dim].name}</div><div class="dim-item-score">${level} / ${result.rawScores[dim]}分</div></div><p>${explanation}</p></div>`;
+      }).join('');
+    }
+
+    function renderResult() {
+      const result = computeResult();
+      const type = result.finalType;
+      document.getElementById('resultModeKicker').textContent = result.modeKicker;
+      document.getElementById('resultTypeName').textContent = `${type.code}（${type.cn}）`;
+      document.getElementById('matchBadge').textContent = result.badge;
+      document.getElementById('resultTypeSub').textContent = result.sub;
+      document.getElementById('resultDesc').textContent = type.desc;
+      document.getElementById('posterCaption').textContent = type.intro;
+      const posterBox = document.getElementById('posterBox');
+      const posterImage = document.getElementById('posterImage');
+      const imageSrc = TYPE_IMAGES[type.code];
+      if (imageSrc) { posterImage.src = imageSrc; posterImage.alt = `${type.code}（${type.cn}）`; posterBox.classList.remove('no-image'); }
+      else { posterImage.removeAttribute('src'); posterImage.alt = ''; posterBox.classList.add('no-image'); }
+      renderDimList(result);
+      showScreen('result');
+    }
+
+    function startTest(preview = false) {
+      app.previewMode = preview;
+      app.answers = {};
+      app.shuffledQuestions = shuffle(questions);
+      renderQuestions();
+      showScreen('test');
+    }
+
+    document.getElementById('startBtn').addEventListener('click', () => startTest(false));
+    document.getElementById('backIntroBtn').addEventListener('click', () => showScreen('intro'));
+    document.getElementById('submitBtn').addEventListener('click', renderResult);
+    document.getElementById('restartBtn').addEventListener('click', () => startTest(false));
+    document.getElementById('toTopBtn').addEventListener('click', () => showScreen('intro'));
+  </script>
+</body>
+</html>
