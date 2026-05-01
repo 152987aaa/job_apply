@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="df865adb-6820-4b3f-9ea4-b04da41ab797" name="gpufree-算力自由">
+        <fileTransfer rootFolder="/root" accessType="SFTP" host="183.147.142.40" port="31424" sshConfigId="e46fc312-9f67-46f4-b067-507a6f46f0d4" sshConfig="root@183.147.142.40:31424 password">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>
